@@ -5,7 +5,10 @@
   --muted: #6b6b70;
   --border: #e2e2e6;
   --accent: #4f46e5;
+  --on-accent: #ffffff;
   --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --hover: #f2f2f5;
 
   font-family:
     system-ui,
@@ -26,7 +29,10 @@
     --muted: #9a9aa2;
     --border: #2e2e33;
     --accent: #818cf8;
+    --on-accent: #121214;
     --danger: #f87171;
+    --danger-soft: #2a1618;
+    --hover: #242428;
   }
 }
 

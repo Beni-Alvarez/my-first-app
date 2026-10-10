@@ -1,32 +1,25 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { afterEach, vi } from 'vitest';
-import { App } from './App';
-
-function renderApp() {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
-    </QueryClientProvider>,
-  );
-}
+import { fireEvent, screen } from '@testing-library/react';
+import { afterEach, expect, it, vi } from 'vitest';
+import { installFakeApi } from './test/fake-api';
+import { currentPath, renderApp } from './test/render-app';
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('shows the song list page and the API status', async () => {
-  vi.stubGlobal(
-    'fetch',
-    vi.fn().mockResolvedValue(new Response(JSON.stringify({ status: 'ok' }), { status: 200 })),
-  );
+it('shows a not-found page for unknown routes', () => {
+  installFakeApi([]);
+  renderApp('/does/not/exist');
 
-  renderApp();
+  expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+});
 
-  expect(screen.getByRole('heading', { name: 'My songs' })).toBeInTheDocument();
-  expect(await screen.findByText('API status: ok')).toBeInTheDocument();
+it('goes from the list to the create form via "New song"', async () => {
+  installFakeApi([]);
+  renderApp('/');
+
+  fireEvent.click(screen.getByRole('link', { name: 'New song' }));
+
+  expect(await screen.findByRole('heading', { name: 'New song' })).toBeInTheDocument();
+  expect(currentPath()).toBe('/songs/new');
 });

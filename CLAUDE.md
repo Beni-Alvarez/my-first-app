@@ -42,11 +42,13 @@ my-first-app/
 ├── .env.example            # template for env vars (commit this, never .env)
 ├── client/                 # React app (Vite)
 │   └── src/
-│       ├── api/            # typed fetch functions for the REST API
-│       ├── components/     # reusable UI components
-│       ├── pages/          # SongListPage, SongDetailPage, SongFormPage
-│       ├── hooks/          # TanStack Query hooks (useSongs, useSong, ...)
-│       └── types/
+│       ├── api/            # fetch wrapper (ApiError), songsApi, shared QueryClient setup
+│       ├── components/     # SongForm, ErrorMessage, shared ui.module.css
+│       ├── pages/          # SongListPage, SongDetailPage, SongFormPage (create + edit)
+│       ├── hooks/          # TanStack Query hooks (useSongs, useSong, useCreateSong, ...)
+│       ├── schemas/        # Zod form schema, mirrors the server rules
+│       ├── test/           # fake in-memory API (fetch stub) + renderApp helper
+│       └── types/          # Song, SongSummary, SongInput
 └── server/                 # Express API
     ├── prisma/
     │   ├── schema.prisma
@@ -167,7 +169,8 @@ Never commit `.env` files or real credentials.
 
 - Server, route tests (`src/routes/*.test.ts`, run by `npm run test`): test every endpoint with Supertest against `createApp({ songsService })`, using the in-memory fake in `src/test/in-memory-songs-service.ts`. They need no database. If you change the `SongsService` interface, update the fake too.
 - Server, database tests (`*.db.test.ts`, run by `npm run test:db`): test the Prisma services against the real `songs_test` database. They apply migrations first and wipe the tables between tests. A safety check refuses any `TEST_DATABASE_URL` whose database name doesn't contain "test".
-- Client: component tests for the list, detail and form pages, with the API mocked.
+- Client: page tests render the whole app at a URL with `renderApp(path)` (`src/test/render-app.tsx`) against the fake API from `installFakeApi()` (`src/test/fake-api.ts`), which replaces `fetch` with an in-memory songs API. Simulate a specific server reply with `fetchMock.mockResolvedValueOnce(json(status, body))`. If the API changes, update the fake too.
+- Validation rules live in two places: `server/src/schemas/song.schema.ts` (the source of truth) and `client/src/schemas/song-form.schema.ts` (instant form feedback). Change both together.
 - New features and bug fixes come with tests. Run `npm run test` and `npm run typecheck` before you call a task done. Also run `npm run test:db` when the database is available and server data code changed.
 
 ## Workflow for Claude

@@ -31,5 +31,10 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
     },
   },
+  {
+    // Fast refresh only matters for app code loaded in the browser, not test helpers.
+    files: ['client/src/test/**', 'client/**/*.test.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
   prettier,
 );

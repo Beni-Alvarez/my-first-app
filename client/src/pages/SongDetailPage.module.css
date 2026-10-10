@@ -1,0 +1,21 @@
+.subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 1.125rem;
+}
+
+.lyrics {
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  /* Keep the line breaks and blank lines exactly as they were typed. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.deleteError {
+  margin-bottom: 1rem;
+}
