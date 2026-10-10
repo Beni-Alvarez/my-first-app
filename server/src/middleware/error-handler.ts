@@ -20,6 +20,13 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     res.status(err.status).json({ error: { message: err.message, details: err.details } });
     return;
   }
+  // Errors from express.json(), e.g. malformed JSON (400) or a too-large body (413).
+  if (typeof err?.status === 'number' && err.status >= 400 && err.status < 500) {
+    const message =
+      err.type === 'entity.parse.failed' ? 'Request body is not valid JSON' : String(err.message);
+    res.status(err.status).json({ error: { message } });
+    return;
+  }
   console.error(err);
   res.status(500).json({ error: { message: 'Internal server error' } });
 };

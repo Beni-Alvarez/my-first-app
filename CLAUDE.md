@@ -119,7 +119,8 @@ npm run db:migrate        # apply Prisma migrations (prisma migrate dev)
 npm run db:seed           # insert sample data
 npm run db:studio         # open Prisma Studio to browse data
 npm run dev               # start server (:4000) and client (:5173) together
-npm run test              # run all tests
+npm run test              # fast tests, no database needed
+npm run test:db           # server integration tests against the songs_test database
 npm run lint              # ESLint
 npm run typecheck         # tsc --noEmit in all workspaces
 npm run build             # production build
@@ -133,7 +134,10 @@ Defined in `server/.env` (copy from `.env.example`):
 DATABASE_URL="postgresql://songs:songs@localhost:5432/songs?schema=public"
 PORT=4000
 CORS_ORIGIN=http://localhost:5173
+TEST_DATABASE_URL="postgresql://songs:songs@localhost:5432/songs_test?schema=public"
 ```
+
+Docker creates the `songs_test` database automatically the first time the container starts (`docker/postgres-init.sql`). If the container already existed before that file was added, run `docker compose down -v` once to recreate it. This deletes all local data.
 
 Never commit `.env` files or real credentials.
 
@@ -161,9 +165,10 @@ Never commit `.env` files or real credentials.
 
 ## Testing
 
-- Server: integration tests for every endpoint with Supertest, against a separate test database (`DATABASE_URL` in `.env.test`).
+- Server, route tests (`src/routes/*.test.ts`, run by `npm run test`): test every endpoint with Supertest against `createApp({ songsService })`, using the in-memory fake in `src/test/in-memory-songs-service.ts`. They need no database. If you change the `SongsService` interface, update the fake too.
+- Server, database tests (`*.db.test.ts`, run by `npm run test:db`): test the Prisma services against the real `songs_test` database. They apply migrations first and wipe the tables between tests. A safety check refuses any `TEST_DATABASE_URL` whose database name doesn't contain "test".
 - Client: component tests for the list, detail and form pages, with the API mocked.
-- New features and bug fixes come with tests. Run `npm run test` and `npm run typecheck` before you call a task done.
+- New features and bug fixes come with tests. Run `npm run test` and `npm run typecheck` before you call a task done. Also run `npm run test:db` when the database is available and server data code changed.
 
 ## Workflow for Claude
 

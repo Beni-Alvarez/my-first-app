@@ -1,9 +1,10 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app.js';
+import { createInMemorySongsService } from './test/in-memory-songs-service.js';
 
 describe('app', () => {
-  const app = createApp();
+  const app = createApp({ songsService: createInMemorySongsService() });
 
   it('GET /api/health returns ok', async () => {
     const res = await request(app).get('/api/health');

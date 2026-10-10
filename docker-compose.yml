@@ -11,6 +11,8 @@ services:
       - '5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
+      # Creates the songs_test database on first start (see docker/postgres-init.sql).
+      - ./docker/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql:ro
 
 volumes:
   db-data:
