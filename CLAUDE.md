@@ -101,12 +101,12 @@ Base URL: `http://localhost:4000/api`
 
 ## Frontend routes
 
-| Route             | Page                                                          |
-| ----------------- | ------------------------------------------------------------- |
-| `/`               | Song list (grouped/sorted by artist) with a "New song" button |
-| `/songs/new`      | Create form                                                   |
-| `/songs/:id`      | Song detail: full lyrics, Edit and Delete buttons             |
-| `/songs/:id/edit` | Edit form (same component as create)                          |
+| Route             | Page                                                                                                           |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| `/`               | Song table (columns: Song Lyrics = title, Author, Year), sorted by artist then title, with a "New song" button |
+| `/songs/new`      | Create form                                                                                                    |
+| `/songs/:id`      | Song detail: full lyrics, Edit and Delete buttons                                                              |
+| `/songs/:id/edit` | Edit form (same component as create)                                                                           |
 
 UI rules: show lyrics with preserved line breaks (`white-space: pre-wrap`). Show loading and error states for every query. Ask for confirmation before deleting. Invalidate the `songs` queries after every mutation.
 

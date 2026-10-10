@@ -8,22 +8,31 @@ afterEach(() => {
 });
 
 describe('SongListPage', () => {
-  it('shows songs grouped by artist, sorted by title', async () => {
+  it('shows a table of songs sorted by author, then title', async () => {
     installFakeApi([
-      makeSong({ id: 'a', artist: 'Zeta Group', title: 'Alpha', album: null, year: null }),
-      makeSong({ id: 'b', artist: 'Alpha Duo', title: 'Second', album: 'Demo', year: 2019 }),
-      makeSong({ id: 'c', artist: 'Alpha Duo', title: 'First' }),
+      makeSong({ id: 'a', artist: 'Zeta Group', title: 'Alpha', year: null }),
+      makeSong({ id: 'b', artist: 'Alpha Duo', title: 'Second', year: 2019 }),
+      makeSong({ id: 'c', artist: 'Alpha Duo', title: 'First', year: 2020 }),
     ]);
 
     renderApp('/');
 
-    const alphaDuo = await screen.findByRole('region', { name: 'Alpha Duo' });
-    const links = within(alphaDuo).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual([
-      'FirstDemo Album · 2020',
-      'SecondDemo · 2019',
+    const table = await screen.findByRole('table');
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers.map((header) => header.textContent)).toEqual(['Song Lyrics', 'Author', 'Year']);
+
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(
+      rows.map((row) =>
+        within(row)
+          .getAllByRole('cell')
+          .map((cell) => cell.textContent),
+      ),
+    ).toEqual([
+      ['First', 'Alpha Duo', '2020'],
+      ['Second', 'Alpha Duo', '2019'],
+      ['Alpha', 'Zeta Group', '—'],
     ]);
-    expect(screen.getByRole('region', { name: 'Zeta Group' })).toBeInTheDocument();
     expect(screen.getByText('3 songs')).toBeInTheDocument();
   });
 
