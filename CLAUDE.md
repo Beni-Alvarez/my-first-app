@@ -97,7 +97,7 @@ Base URL: `http://localhost:4000/api`
 
 - Validate every request body with Zod. Invalid input returns `400` with `{ error: { message, details } }`.
 - All errors go through one central error-handling middleware. Never leak stack traces in responses.
-- Validation rules: `title` and `artist` are required, trimmed, 1–200 chars. `lyrics` is required, max 20,000 chars. `year` is optional, 1900 to the current year.
+- Validation rules: `title` and `artist` are required, trimmed, 1–200 chars. `lyrics` is required, max 20,000 chars. `year` is optional, 1000 to the current year.
 
 ## Frontend routes
 

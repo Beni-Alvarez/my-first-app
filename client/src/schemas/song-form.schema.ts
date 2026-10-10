@@ -37,8 +37,8 @@ export const songFormSchema = z.object({
     .refine((value) => value === '' || /^\d{4}$/.test(value), 'Year must be a 4-digit number')
     .transform((value) => (value === '' ? null : Number(value)))
     .refine(
-      (value) => value === null || (value >= 1900 && value <= new Date().getFullYear()),
-      'Year must be between 1900 and this year',
+      (value) => value === null || (value >= 1000 && value <= new Date().getFullYear()),
+      'Year must be between 1000 and this year',
     ),
   lyrics: z
     .string()

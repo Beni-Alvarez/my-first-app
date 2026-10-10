@@ -37,13 +37,13 @@ describe('SongFormPage — create', () => {
     const { fetchMock } = installFakeApi([]);
     renderApp('/songs/new');
 
-    fill(/Year/, '1850');
+    fill(/Year/, '0999');
     fireEvent.click(screen.getByRole('button', { name: 'Save song' }));
 
     expect(await screen.findByText('Title is required')).toBeInTheDocument();
     expect(screen.getByText('Artist is required')).toBeInTheDocument();
     expect(screen.getByText('Lyrics are required')).toBeInTheDocument();
-    expect(screen.getByText('Year must be between 1900 and this year')).toBeInTheDocument();
+    expect(screen.getByText('Year must be between 1000 and this year')).toBeInTheDocument();
     expect(screen.getByLabelText(/Title/)).toHaveAttribute('aria-invalid', 'true');
     expect(fetchMock).not.toHaveBeenCalled();
   });

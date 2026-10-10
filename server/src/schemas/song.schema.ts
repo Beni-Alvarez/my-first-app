@@ -24,7 +24,7 @@ export const songInputSchema = z.object({
   year: z
     .number({ error: 'Year must be a number' })
     .int('Year must be a whole number')
-    .min(1900, 'Year must be 1900 or later')
+    .min(1000, 'Year must be 1000 or later')
     .nullish()
     // Checked per request (not at module load) so the limit moves with the calendar.
     .refine((value) => value == null || value <= new Date().getFullYear(), {

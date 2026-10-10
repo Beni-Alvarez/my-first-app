@@ -96,6 +96,15 @@ describe('/api/songs', () => {
       });
     });
 
+    it('accepts years before 1900 for old songs', async () => {
+      const res = await request(app)
+        .post('/api/songs')
+        .send({ ...validSong, year: 1893 });
+
+      expect(res.status).toBe(201);
+      expect(res.body.year).toBe(1893);
+    });
+
     it('ignores fields that are not part of a song', async () => {
       const res = await request(app)
         .post('/api/songs')
@@ -112,7 +121,7 @@ describe('/api/songs', () => {
       ['lyrics are missing', { lyrics: undefined }, 'lyrics'],
       ['title is too long', { title: 'a'.repeat(201) }, 'title'],
       ['lyrics are too long', { lyrics: 'a'.repeat(20_001) }, 'lyrics'],
-      ['year is before 1900', { year: 1899 }, 'year'],
+      ['year is before 1000', { year: 999 }, 'year'],
       ['year is in the future', { year: new Date().getFullYear() + 1 }, 'year'],
       ['year is not a whole number', { year: 2020.5 }, 'year'],
       ['year is a string', { year: '2020' }, 'year'],
