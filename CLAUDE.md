@@ -39,6 +39,9 @@ my-first-app/
 ├── CLAUDE.md
 ├── package.json            # root: workspaces + shared scripts
 ├── docker-compose.yml      # PostgreSQL service
+├── docker/
+│   └── postgres-init.sql   # creates the songs_test database on first container start
+├── eslint.config.js        # lint rules for both workspaces
 ├── .env.example            # template for env vars (commit this, never .env)
 ├── client/                 # React app (Vite)
 │   └── src/
@@ -48,6 +51,7 @@ my-first-app/
 │       ├── hooks/          # TanStack Query hooks (useSongs, useSong, useCreateSong, ...)
 │       ├── schemas/        # Zod form schema, mirrors the server rules
 │       ├── test/           # fake in-memory API (fetch stub) + renderApp helper
+│       ├── test-setup.ts   # Vitest setup (jest-dom matchers)
 │       └── types/          # Song, SongSummary, SongInput
 └── server/                 # Express API
     ├── prisma/
@@ -61,7 +65,9 @@ my-first-app/
         ├── controllers/    # request/response handling
         ├── services/       # business logic + Prisma calls
         ├── schemas/        # Zod schemas
-        └── middleware/     # error handler, validation
+        ├── middleware/     # error handler, validation
+        ├── lib/            # shared Prisma client (prisma.ts)
+        └── test/           # in-memory SongsService fake, test-database global setup
 ```
 
 ## Data model
@@ -89,6 +95,7 @@ Base URL: `http://localhost:4000/api`
 
 | Method | Path         | Description                                                | Success   |
 | ------ | ------------ | ---------------------------------------------------------- | --------- |
+| GET    | `/health`    | Health check, returns `{ status: 'ok' }`                   | 200       |
 | GET    | `/songs`     | List songs (id, title, artist, album, year; **no lyrics**) | 200       |
 | GET    | `/songs/:id` | Full song including lyrics                                 | 200 / 404 |
 | POST   | `/songs`     | Create a song                                              | 201       |
@@ -97,7 +104,8 @@ Base URL: `http://localhost:4000/api`
 
 - Validate every request body with Zod. Invalid input returns `400` with `{ error: { message, details } }`.
 - All errors go through one central error-handling middleware. Never leak stack traces in responses.
-- Validation rules: `title` and `artist` are required, trimmed, 1–200 chars. `lyrics` is required, max 20,000 chars. `year` is optional, 1000 to the current year.
+- Unknown routes return `404` with the same error body shape.
+- Validation rules: `title` and `artist` are required, trimmed, 1–200 chars. `lyrics` is required, trimmed, max 20,000 chars. `album` is optional, max 200 chars. `year` is optional, a whole number from 1000 to the current year. Empty `album`/`year` values are stored as `null`.
 
 ## Frontend routes
 
@@ -124,6 +132,7 @@ npm run dev               # start server (:4000) and client (:5173) together
 npm run test              # fast tests, no database needed
 npm run test:db           # server integration tests against the songs_test database
 npm run lint              # ESLint
+npm run format            # Prettier (rewrites files)
 npm run typecheck         # tsc --noEmit in all workspaces
 npm run build             # production build
 ```
@@ -164,10 +173,11 @@ Never commit `.env` files or real credentials.
 
 - Seed data, tests and examples must use **placeholder or self-written text** (e.g. "Line one of a sample verse"). Never insert real, copyrighted song lyrics.
 - The app only stores text that the user types in for personal use. Don't add features that scrape or fetch lyrics from external websites.
+- When the owner asks Claude to add a song to their own database, write the full text only if the lyrics are in the public domain (e.g. old hymns and poems). Add it through the API (`POST /api/songs`), not by editing the database directly.
 
 ## Testing
 
-- Server, route tests (`src/routes/*.test.ts`, run by `npm run test`): test every endpoint with Supertest against `createApp({ songsService })`, using the in-memory fake in `src/test/in-memory-songs-service.ts`. They need no database. If you change the `SongsService` interface, update the fake too.
+- Server, fast tests (every `*.test.ts` except `*.db.test.ts`, run by `npm run test`, e.g. `src/routes/songs.routes.test.ts`, `src/app.test.ts`): test every endpoint with Supertest against `createApp({ songsService })`, using the in-memory fake in `src/test/in-memory-songs-service.ts`. They need no database. If you change the `SongsService` interface, update the fake too.
 - Server, database tests (`*.db.test.ts`, run by `npm run test:db`): test the Prisma services against the real `songs_test` database. They apply migrations first and wipe the tables between tests. A safety check refuses any `TEST_DATABASE_URL` whose database name doesn't contain "test".
 - Client: page tests render the whole app at a URL with `renderApp(path)` (`src/test/render-app.tsx`) against the fake API from `installFakeApi()` (`src/test/fake-api.ts`), which replaces `fetch` with an in-memory songs API. Simulate a specific server reply with `fetchMock.mockResolvedValueOnce(json(status, body))`. If the API changes, update the fake too.
 - Validation rules live in two places: `server/src/schemas/song.schema.ts` (the source of truth) and `client/src/schemas/song-form.schema.ts` (instant form feedback). Change both together.
@@ -177,6 +187,7 @@ Never commit `.env` files or real credentials.
 
 - Build in small, working increments. Suggested order: (1) monorepo scaffolding, (2) Docker + Prisma schema + migration, (3) API + tests, (4) React pages, (5) polish.
 - After changes, run lint, typecheck and tests, and report the real results.
+- Before starting the app, check that the database container is running (`docker compose ps`) and start it if it isn't. Claude Code may stop background dev servers when memory runs low. For long sessions, the owner can run `npm run dev` in their own terminal.
 - Explain what you did in beginner-friendly terms: this is the owner's first app.
 - Ask before adding new dependencies, changing the data model, or making architectural changes.
 - Never commit secrets. Commit only when asked, using clear messages (e.g. `feat: add song edit page`).
